@@ -50,13 +50,11 @@ export default class table extends Component {
               className='input'
               type={type}
             />
-            {/* {!this.props.valorado && 'conectado'} */}
           </Label>
         </td>
       );
     }
 
-    // TALVEZ DPOIS :)
     const { grafoGerado, direcionado } = this.props;
     let temGrafo = !direcionado && Object.keys(grafoGerado).length !== 0;
 
@@ -69,7 +67,7 @@ export default class table extends Component {
             </th>
             {temGrafo
               ? aux.map((_, i) => (
-                  <td align='center'>
+                  <td key={_ + i} align='center'>
                     <Label>{this.makeInput(type, letter, i)}</Label>
                   </td>
                 ))
@@ -77,6 +75,7 @@ export default class table extends Component {
           </tr>
         );
       }
+      return null;
     });
   }
 

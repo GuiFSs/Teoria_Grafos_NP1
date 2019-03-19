@@ -4,9 +4,9 @@ import {
   Input,
   Label,
   FormGroup,
-  Button,
   Row,
-  Col
+  Col,
+  Button
 } from 'reactstrap';
 import Table from '../Table/table';
 import List from '../List/List';
@@ -23,7 +23,10 @@ export default class Home extends Component {
       direcionado: true,
       valorado: false,
       showConvertedTable: false,
-      show: false
+      show: false,
+      listState: {
+        values: {}
+      }
     };
     this.setTable = this.setTable.bind(this);
     this.setList = this.setList.bind(this);
@@ -41,6 +44,34 @@ export default class Home extends Component {
       ? this.setState({ list: true, table: false })
       : this.setState({ list: false });
   }
+
+  convertToMatrix = (letter, value) => {
+    const { values } = this.state.listState;
+    const newValues = { ...values };
+    value = value.split(';');
+    value.map(val => {
+      val = val.trim();
+      const newVal = val.split(' ');
+      if (this.state.valorado) {
+        newValues[letter] = {
+          ...newValues[letter],
+          [newVal[1]]: newVal[1],
+          value: newVal[0]
+        };
+      } else {
+        newValues[letter] = {
+          ...newValues[letter],
+          [newVal[0]]: newVal[0],
+          value: true
+        };
+      }
+    });
+
+    console.log(newValues);
+    const newListState = { ...this.state.listState, values: newValues };
+    this.setState({ listState: newListState });
+  };
+
   gerarGrafo(clickedL, indexL) {
     let select = document.getElementById('select').value;
     let input = document.getElementsByClassName('input');
@@ -179,7 +210,6 @@ export default class Home extends Component {
                 type='checkbox'
                 defaultChecked={direcionado}
                 onChange={e => this.handleCheckbox(e, 'direcionado')}
-                onc
               />
               direcionado
             </Label>
@@ -209,14 +239,19 @@ export default class Home extends Component {
 
         {this.state.list ? (
           <List
-            direcionado
-            valorado
+            convertToMatrix={this.convertToMatrix}
+            grafoGerado={this.state.input}
+            gerarGrafo={this.gerarGrafo}
+            direcionado={direcionado}
+            valorado={valorado}
             n={document.getElementById('select').value}
           />
         ) : (
           ''
         )}
-        <Button onClick={this.gerarGrafo}>Gerar Grafo</Button>
+        {this.state.list && (
+          <Button onClick={this.convertToMatrix}>Gerar Grafo</Button>
+        )}
 
         {showConvertedTable && <CTable inputs={input} />}
         {this.state.show ? <Wrapper inputs={this.state.input} /> : ''}
