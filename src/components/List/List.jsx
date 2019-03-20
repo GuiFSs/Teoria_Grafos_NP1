@@ -7,25 +7,31 @@ export default class Example extends React.Component {
   };
 
   onClickConverter = async () => {
-    const newInputs = { ...this.state.rawInputs };
+    const inputs = {};
     const { n, convertToMatrix } = this.props;
     for (let i = 0; i < n; i++) {
       const letter = String.fromCharCode(65 + i);
-      newInputs[letter] = newInputs[letter] || '';
+      inputs[letter] = this.state.rawInputs[letter] || '';
     }
-    convertToMatrix(newInputs);
-    this.setState({ rawInputs: newInputs });
+
+    convertToMatrix(inputs);
+    this.setState({ rawInputs: inputs });
   };
 
   handleInputChange = (letter, value) => {
+    if (!this.props.valorado) {
+      value = value.replace(/[0-9]/g, '');
+    }
     value = value.toUpperCase();
     const newInputs = { ...this.state.rawInputs };
     newInputs[letter] = value;
     this.setState({ rawInputs: newInputs });
   };
 
-  renderInput(n) {
+  renderInput = n => {
     let inputs = [];
+
+    // this.setState({ rawInputs: this.props.rawInputs });
 
     for (let i = 0; i < n; i++) {
       const res = String.fromCharCode(65 + i);
@@ -44,7 +50,7 @@ export default class Example extends React.Component {
       );
     }
     return inputs;
-  }
+  };
 
   render() {
     return (

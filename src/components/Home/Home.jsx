@@ -1,13 +1,5 @@
 import React, { Component } from 'react';
-import {
-  Container,
-  Input,
-  Label,
-  FormGroup,
-  Row,
-  Col,
-  Button
-} from 'reactstrap';
+import { Container, Input, Label, FormGroup, Row, Col } from 'reactstrap';
 import Table from '../Table/table';
 import List from '../List/List';
 import Wrapper from '../p5/Wrapper';
@@ -18,6 +10,7 @@ export default class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      nVertices: 0,
       table: false,
       list: false,
       input: {},
@@ -27,14 +20,17 @@ export default class Home extends Component {
       show: false,
       listState: {
         showCList: false,
-        values: {}
+        values: {},
+        rawInputs: {}
       }
     };
     this.setTable = this.setTable.bind(this);
     this.setList = this.setList.bind(this);
     this.gerarGrafo = this.gerarGrafo.bind(this);
   }
-  setTable() {
+  async setTable(e) {
+    await this.setState({ nVertices: e.target.value });
+
     document.getElementById('select').value !== '...' &&
     document.getElementById('radio').checked !== false
       ? this.setState({ table: true, list: false })
@@ -81,8 +77,10 @@ export default class Home extends Component {
       // rawInput = 'A; B; C'
       rawInput = rawInput.replace(/[0-9]/g, '');
       const separatedBySemicolon = rawInput.split(';');
+
       separatedBySemicolon.map(letter => {
         letter = letter.trim();
+        if (letter.length === 0) return null;
         output[letter] = true; // arrChars[0] = letter
         return null;
       });
@@ -100,13 +98,75 @@ export default class Home extends Component {
     return output;
   };
 
+  deleteMissingLetters = rawInput => {
+    const possiblesLetters = [];
+    const nVertices = document.getElementById('select').value;
+    for (let i = 0; i < nVertices; i++) {
+      possiblesLetters[i] = String.fromCharCode(65 + i);
+    }
+
+    if (this.state.valorado) {
+      let separatedBySemicolon = rawInput.split(';');
+      separatedBySemicolon = separatedBySemicolon.filter(word => {
+        word = word.trim();
+        const arrChars = word.split(' ');
+        if (arrChars.length !== 2) return null;
+        return possiblesLetters.includes(arrChars[1]);
+      });
+
+      return separatedBySemicolon.join(';');
+    } else {
+      rawInput = rawInput.replace(/[0-9]/g, '');
+      let separatedBySemicolon = rawInput.split(';');
+      separatedBySemicolon.filter(letter => {
+        letter = letter.trim();
+        return possiblesLetters.includes(letter);
+      });
+      return separatedBySemicolon.join(';');
+    }
+  };
+
+  naoDirecionado = rawInputs => {
+    const keys = Object.keys(rawInputs);
+    const newRawInputs = { ...rawInputs };
+
+    if (this.state.valorado) {
+      keys.map(key => {
+        let separatedBySemicolon = rawInputs[key].split(';');
+        separatedBySemicolon.filter(word => {
+          word = word.trim();
+          const arrChars = word.split(' ');
+          if (arrChars.length !== 2) return null;
+          newRawInputs[arrChars[1]] += `; ${arrChars[0]} ${key}`;
+          return null;
+        });
+        return null;
+      });
+    } else {
+      keys.map(key => {
+        let separatedBySemicolon = rawInputs[key].split(';');
+        separatedBySemicolon.filter(letter => {
+          letter = letter.trim();
+          if (letter.length !== 1) return null;
+          newRawInputs[letter] += `; ${key}`;
+          return null;
+        });
+        return null;
+      });
+    }
+    return newRawInputs;
+  };
+
   convertToMatrix = rawInputs => {
     const keys = Object.keys(rawInputs);
     const formatedInputs = {};
 
-    console.log('RAW INPUTS:', rawInputs);
+    rawInputs = this.state.direcionado
+      ? rawInputs
+      : this.naoDirecionado(rawInputs);
 
     keys.map(key => {
+      rawInputs[key] = this.deleteMissingLetters(rawInputs[key]);
       return (formatedInputs[key] = this.formatInput(rawInputs[key]));
     });
 
@@ -114,15 +174,10 @@ export default class Home extends Component {
       listState: {
         ...this.state.listState,
         showCList: true,
-        values: formatedInputs
+        values: formatedInputs,
+        rawInputs: rawInputs
       }
     });
-
-    // TEM Q SAIR ASSIM
-    // const inputs = {
-    //   A: {B: 1, C: 3},
-    //   B: {B: 3, A: 5}
-    // }
   };
 
   gerarGrafo(clickedL, indexL) {
@@ -292,6 +347,7 @@ export default class Home extends Component {
 
         {this.state.list ? (
           <List
+            rawInputs={this.state.listState.rawInputs}
             convertToMatrix={this.convertToMatrix}
             grafoGerado={this.state.input}
             gerarGrafo={this.gerarGrafo}
@@ -304,7 +360,11 @@ export default class Home extends Component {
         )}
 
         {this.state.listState.showCList && (
-          <CList values={this.state.listState.values} />
+          <CList
+            type={this.state.valorado ? 'text' : 'checkbox'}
+            nVertices={this.state.nVertices}
+            values={this.state.listState.values}
+          />
         )}
         {/* {this.state.list && (
           <Button onClick={this.convertToMatrix}>Gerar Grafo</Button>
