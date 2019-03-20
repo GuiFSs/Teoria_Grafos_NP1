@@ -1,27 +1,49 @@
 import React from 'react';
-import { Table, Container, Row } from 'reactstrap';
+import { Table, Container, Row, Button, Input } from 'reactstrap';
 
 export default class Example extends React.Component {
-  renderInput(n) {
-    const alf = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+  state = {
+    rawInputs: {}
+  };
 
-    return alf.map((res, i) => {
-      if (i < n) {
-        return (
-          <tr key={res + 1}>
-            <th scope='row'>{res}</th>
-            <td>
-              <input
-                onChange={e => this.props.convertToMatrix(res, e.target.value)}
-                className='inputAdj'
-                type='text'
-              />
-            </td>
-          </tr>
-        );
-      }
-      return null;
-    });
+  onClickConverter = async () => {
+    const newInputs = { ...this.state.rawInputs };
+    const { n, convertToMatrix } = this.props;
+    for (let i = 0; i < n; i++) {
+      const letter = String.fromCharCode(65 + i);
+      newInputs[letter] = newInputs[letter] || '';
+    }
+    convertToMatrix(newInputs);
+    this.setState({ rawInputs: newInputs });
+  };
+
+  handleInputChange = (letter, value) => {
+    value = value.toUpperCase();
+    const newInputs = { ...this.state.rawInputs };
+    newInputs[letter] = value;
+    this.setState({ rawInputs: newInputs });
+  };
+
+  renderInput(n) {
+    let inputs = [];
+
+    for (let i = 0; i < n; i++) {
+      const res = String.fromCharCode(65 + i);
+      inputs[i] = (
+        <tr key={res + 1}>
+          <th scope='row'>{res}</th>
+          <td>
+            <Input
+              onChange={e => this.handleInputChange(res, e.target.value)}
+              value={this.state.rawInputs[res]}
+              className='inputAdj'
+              type='text'
+            />
+          </td>
+        </tr>
+      );
+    }
+    return inputs;
   }
 
   render() {
@@ -39,6 +61,7 @@ export default class Example extends React.Component {
             <tbody>{this.renderInput(this.props.n)}</tbody>
           </Table>
         </Row>
+        <Button onClick={this.onClickConverter}>Converter para matriz</Button>
       </Container>
     );
   }

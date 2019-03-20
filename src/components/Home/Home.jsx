@@ -12,6 +12,7 @@ import Table from '../Table/table';
 import List from '../List/List';
 import Wrapper from '../p5/Wrapper';
 import CTable from '../Converted/CTable';
+import CList from '../Converted/CList';
 
 export default class Home extends Component {
   constructor(props) {
@@ -25,6 +26,7 @@ export default class Home extends Component {
       showConvertedTable: false,
       show: false,
       listState: {
+        showCList: false,
         values: {}
       }
     };
@@ -45,31 +47,82 @@ export default class Home extends Component {
       : this.setState({ list: false });
   }
 
-  convertToMatrix = (letter, value) => {
-    const { values } = this.state.listState;
-    const newValues = { ...values };
-    value = value.split(';');
-    value.map(val => {
-      val = val.trim();
-      const newVal = val.split(' ');
-      if (this.state.valorado) {
-        newValues[letter] = {
-          ...newValues[letter],
-          [newVal[1]]: newVal[1],
-          value: newVal[0]
-        };
-      } else {
-        newValues[letter] = {
-          ...newValues[letter],
-          [newVal[0]]: newVal[0],
-          value: true
-        };
+  sortKeys = obj => {
+    const ordered = {};
+    Object.keys(obj)
+      .sort()
+      .map(key => (ordered[key] = obj[key]));
+    return ordered;
+  };
+
+  formatInput = rawInput => {
+    let output = {};
+    const nVertices = document.getElementById('select').value;
+
+    if (this.state.valorado) {
+      // rawInput = '1 A; 3 B; 2 C'
+      const separatedBySemicolon = rawInput.split(';');
+
+      separatedBySemicolon.map(word => {
+        word = word.trim();
+        const arrChars = word.split(' ');
+        if (arrChars.length !== 2) return null;
+        output[arrChars[1]] = arrChars[0]; // arrChars[0] = value, arrChars[1] = letter
+        return null;
+      });
+
+      for (let i = 0; i < nVertices; i++) {
+        const letter = String.fromCharCode(65 + i);
+        output[letter] = output[letter] || '';
+      }
+
+      // output = {B: 1, C: 3}
+    } else {
+      // rawInput = 'A; B; C'
+      rawInput = rawInput.replace(/[0-9]/g, '');
+      const separatedBySemicolon = rawInput.split(';');
+      separatedBySemicolon.map(letter => {
+        letter = letter.trim();
+        output[letter] = true; // arrChars[0] = letter
+        return null;
+      });
+
+      for (let i = 0; i < nVertices; i++) {
+        const letter = String.fromCharCode(65 + i);
+        output[letter] = output[letter] || false;
+      }
+
+      // output A: {B: true, C: true}
+    }
+
+    output = this.sortKeys(output);
+
+    return output;
+  };
+
+  convertToMatrix = rawInputs => {
+    const keys = Object.keys(rawInputs);
+    const formatedInputs = {};
+
+    console.log('RAW INPUTS:', rawInputs);
+
+    keys.map(key => {
+      return (formatedInputs[key] = this.formatInput(rawInputs[key]));
+    });
+
+    this.setState({
+      listState: {
+        ...this.state.listState,
+        showCList: true,
+        values: formatedInputs
       }
     });
 
-    console.log(newValues);
-    const newListState = { ...this.state.listState, values: newValues };
-    this.setState({ listState: newListState });
+    // TEM Q SAIR ASSIM
+    // const inputs = {
+    //   A: {B: 1, C: 3},
+    //   B: {B: 3, A: 5}
+    // }
   };
 
   gerarGrafo(clickedL, indexL) {
@@ -189,7 +242,7 @@ export default class Home extends Component {
                 id='radio'
                 onChange={this.setTable}
                 name='radio1'
-              />{' '}
+              />
               Matriz Adjacente
             </Label>
           </FormGroup>
@@ -249,9 +302,13 @@ export default class Home extends Component {
         ) : (
           ''
         )}
-        {this.state.list && (
-          <Button onClick={this.convertToMatrix}>Gerar Grafo</Button>
+
+        {this.state.listState.showCList && (
+          <CList values={this.state.listState.values} />
         )}
+        {/* {this.state.list && (
+          <Button onClick={this.convertToMatrix}>Gerar Grafo</Button>
+        )} */}
 
         {showConvertedTable && <CTable inputs={input} />}
         {this.state.show ? <Wrapper inputs={this.state.input} /> : ''}
