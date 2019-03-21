@@ -1,10 +1,11 @@
 import React from 'react';
 import { Table, Input } from 'reactstrap';
 
-const makeConnectedToAndValues = input => {
+const makeConnectedToAndValues = (input, nVertices) => {
   const arr = [];
   const values = [];
   for (let i = 0; i < input.length; i++) {
+    if (i >= nVertices) break;
     if (input[i] !== '' && input[i] !== false) {
       arr[i] = String.fromCharCode(65 + i);
       values[i] = { connectedId: arr[i], weight: input[i] };
@@ -13,8 +14,11 @@ const makeConnectedToAndValues = input => {
   return { connectedTo: arr, values };
 };
 
-const showValues = arrayString => {
-  const { connectedTo, values } = makeConnectedToAndValues(arrayString);
+const showValues = (arrayString, nVertices) => {
+  const { connectedTo, values } = makeConnectedToAndValues(
+    arrayString,
+    nVertices
+  );
 
   let res = '';
 
@@ -28,7 +32,7 @@ const showValues = arrayString => {
   return res.substr(0, res.length - 2);
 };
 
-const CTable = ({ inputs }) => {
+const CTable = ({ inputs, nVertices }) => {
   const inputsKeys = Object.keys(inputs);
   const head = (
     <thead>
@@ -41,14 +45,21 @@ const CTable = ({ inputs }) => {
 
   const body = (
     <tbody>
-      {inputsKeys.map(key => (
-        <tr key={key}>
-          {key}
-          <td>
-            <Input type='text' readOnly value={showValues(inputs[key])} />
-          </td>
-        </tr>
-      ))}
+      {inputsKeys.map(
+        (key, i) =>
+          i < nVertices && (
+            <tr key={key}>
+              {key}
+              <td>
+                <Input
+                  type='text'
+                  readOnly
+                  value={showValues(inputs[key], nVertices)}
+                />
+              </td>
+            </tr>
+          )
+      )}
     </tbody>
   );
 

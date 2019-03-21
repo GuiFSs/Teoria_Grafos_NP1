@@ -23,20 +23,20 @@ export default class Home extends Component {
         rawInputs: {}
       }
     };
-    this.setTable = this.setTable.bind(this);
     this.setList = this.setList.bind(this);
     this.gerarGrafo = this.gerarGrafo.bind(this);
   }
-  async setTable(e) {
+  setTable = async e => {
+    const value = isNaN(e.target.value) ? this.state.nVertices : e.target.value;
     await this.setState({
-      nVertices: e.target.value
+      nVertices: value
     });
 
     document.getElementById('select').value !== '...' &&
     document.getElementById('radio').checked !== false
       ? this.setState({ table: true, list: false })
       : this.setState({ table: false });
-  }
+  };
   async setList() {
     document.getElementById('select').value !== '...' &&
     document.getElementById('radio2').checked !== false
@@ -219,7 +219,7 @@ export default class Home extends Component {
     });
   };
 
-  gerarGrafo(clickedL, indexL) {
+  gerarGrafo(changedLetter, changedIndexL, type = null) {
     let select = document.getElementById('select').value;
     let input = document.getElementsByClassName('input');
     let array = {
@@ -247,7 +247,10 @@ export default class Home extends Component {
     }
 
     const objList = {};
-    let letterIndex = 0;
+    let letterIndex = 0; // index of l in array below
+    console.log(array);
+    console.log('l:', changedLetter, 'index:', changedIndexL);
+
     for (const l in array) {
       if (array[l].length !== 0) {
         if (!this.state.direcionado) {
@@ -256,6 +259,8 @@ export default class Home extends Component {
               if (!this.state.valorado) {
                 array[String.fromCharCode(65 + i)][letterIndex] = true;
               } else {
+                // TODO: PEGAR O changedLetter ver se o q mudou é menor e entao fazer com q o maior fique com o msmo valor
+                // se o q mudou é menor q o atual array[l][i], entao array[l][i] = o q mudou
                 array[String.fromCharCode(65 + i)][letterIndex] = array[l][i];
               }
             }
@@ -267,20 +272,16 @@ export default class Home extends Component {
       letterIndex++;
     }
 
-    console.log('clickedL:', clickedL, 'indexL:', indexL);
-    console.log(objList);
-    if (clickedL && !isNaN(indexL)) {
-      console.log('entrou clicked true');
+    if (type !== 'input') {
+      if (changedLetter && !isNaN(changedIndexL)) {
+        if (objList[changedLetter][changedIndexL]) {
+          objList[changedLetter][changedIndexL] = false;
 
-      if (objList[clickedL][indexL]) {
-        console.log('entrou objList true');
-
-        objList[clickedL][indexL] = false;
-
-        // pega a letra do index d indexL (o q foi clicado) e dpois pega a letra da row e transforma em numero
-        objList[String.fromCharCode(65 + indexL)][
-          clickedL.charCodeAt(0) - 65
-        ] = false;
+          // pega a letra do index d indexL (o q foi clicado) e dpois pega a letra da row e transforma em numero
+          objList[String.fromCharCode(65 + changedIndexL)][
+            changedLetter.charCodeAt(0) - 65
+          ] = false;
+        }
       }
     }
 
@@ -306,7 +307,6 @@ export default class Home extends Component {
               <Input
                 type='select'
                 onChange={this.setTable}
-                // onChange={this.setList}
                 name='select'
                 id='select'
               >
@@ -408,7 +408,9 @@ export default class Home extends Component {
           <Button onClick={this.convertToMatrix}>Gerar Grafo</Button>
         )} */}
 
-        {showConvertedTable && <CTable inputs={input} />}
+        {showConvertedTable && (
+          <CTable nVertices={this.state.nVertices} inputs={input} />
+        )}
         {/* {this.state.show ? <Wrapper inputs={this.state.input} /> : ''} */}
       </Container>
     );
