@@ -7,12 +7,18 @@ export default class Example extends React.Component {
   };
 
   onClickConverter = async () => {
-    const inputs = {};
+    let inputs = {};
     const { n, convertToMatrix } = this.props;
     for (let i = 0; i < n; i++) {
       const letter = String.fromCharCode(65 + i);
       inputs[letter] = this.state.rawInputs[letter] || '';
     }
+
+    inputs = this.props.direcionado
+      ? inputs
+      : this.props.naoDirecionado(inputs);
+
+    inputs = this.props.cleanInputs(inputs);
 
     convertToMatrix(inputs);
     this.setState({ rawInputs: inputs });

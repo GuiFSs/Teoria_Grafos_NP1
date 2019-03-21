@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Container, Input, Label, FormGroup, Row, Col } from 'reactstrap';
 import Table from '../Table/table';
 import List from '../List/List';
-import Wrapper from '../p5/Wrapper';
 import CTable from '../Converted/CTable';
 import CList from '../Converted/CList';
 
@@ -29,14 +28,16 @@ export default class Home extends Component {
     this.gerarGrafo = this.gerarGrafo.bind(this);
   }
   async setTable(e) {
-    await this.setState({ nVertices: e.target.value });
+    await this.setState({
+      nVertices: e.target.value
+    });
 
     document.getElementById('select').value !== '...' &&
     document.getElementById('radio').checked !== false
       ? this.setState({ table: true, list: false })
       : this.setState({ table: false });
   }
-  setList() {
+  async setList() {
     document.getElementById('select').value !== '...' &&
     document.getElementById('radio2').checked !== false
       ? this.setState({ list: true, table: false })
@@ -118,11 +119,11 @@ export default class Home extends Component {
     } else {
       rawInput = rawInput.replace(/[0-9]/g, '');
       let separatedBySemicolon = rawInput.split(';');
-      separatedBySemicolon.filter(letter => {
+      separatedBySemicolon = separatedBySemicolon.filter(letter => {
         letter = letter.trim();
         return possiblesLetters.includes(letter);
       });
-      return separatedBySemicolon.join(';');
+      return separatedBySemicolon.join(';').trim();
     }
   };
 
@@ -137,7 +138,9 @@ export default class Home extends Component {
           word = word.trim();
           const arrChars = word.split(' ');
           if (arrChars.length !== 2) return null;
-          newRawInputs[arrChars[1]] += `; ${arrChars[0]} ${key}`;
+          if (arrChars[1] !== key) {
+            newRawInputs[arrChars[1]] += `; ${arrChars[0]} ${key}`;
+          }
           return null;
         });
         return null;
@@ -148,9 +151,49 @@ export default class Home extends Component {
         separatedBySemicolon.filter(letter => {
           letter = letter.trim();
           if (letter.length !== 1) return null;
-          newRawInputs[letter] += `; ${key}`;
+          if (letter !== key) {
+            newRawInputs[letter] += `; ${key}`;
+          }
           return null;
         });
+        return null;
+      });
+    }
+    return newRawInputs;
+  };
+
+  removeDuplicateCharacters = string =>
+    string
+      .split('')
+      .filter(function(item, pos, self) {
+        if (item === ';' || !isNaN(item) || item === ' ') {
+          return true;
+        }
+        return self.indexOf(item) === pos;
+      })
+      .join('')
+      .trim();
+
+  cleanInputs = rawInputs => {
+    const keys = Object.keys(rawInputs);
+    const newRawInputs = { ...rawInputs };
+
+    if (this.state.valorado) {
+      keys.map(key => {
+        newRawInputs[key] = this.removeDuplicateCharacters(rawInputs[key]);
+        let separatedBySemicolon = newRawInputs[key].split(';');
+        separatedBySemicolon = separatedBySemicolon.filter(word => {
+          word = word.trim();
+          const arrChars = word.split(' ');
+          return arrChars.length === 2;
+        });
+
+        newRawInputs[key] = separatedBySemicolon.join(';').trim();
+        return null;
+      });
+    } else {
+      keys.map(key => {
+        newRawInputs[key] = this.removeDuplicateCharacters(rawInputs[key]);
         return null;
       });
     }
@@ -160,10 +203,6 @@ export default class Home extends Component {
   convertToMatrix = rawInputs => {
     const keys = Object.keys(rawInputs);
     const formatedInputs = {};
-
-    rawInputs = this.state.direcionado
-      ? rawInputs
-      : this.naoDirecionado(rawInputs);
 
     keys.map(key => {
       rawInputs[key] = this.deleteMissingLetters(rawInputs[key]);
@@ -205,11 +244,8 @@ export default class Home extends Component {
       array[alf[j]].push(
         this.state.valorado ? input[i].value : input[i].checked
       );
-      // console.log(alf[j] + ' =  ' + input[i].value);
-      // console.log(array);
     }
 
-    // TALVEZ DPOIS :)
     const objList = {};
     let letterIndex = 0;
     for (const l in array) {
@@ -347,6 +383,8 @@ export default class Home extends Component {
 
         {this.state.list ? (
           <List
+            cleanInputs={this.cleanInputs}
+            naoDirecionado={this.naoDirecionado}
             rawInputs={this.state.listState.rawInputs}
             convertToMatrix={this.convertToMatrix}
             grafoGerado={this.state.input}
@@ -371,7 +409,7 @@ export default class Home extends Component {
         )} */}
 
         {showConvertedTable && <CTable inputs={input} />}
-        {this.state.show ? <Wrapper inputs={this.state.input} /> : ''}
+        {/* {this.state.show ? <Wrapper inputs={this.state.input} /> : ''} */}
       </Container>
     );
   }
