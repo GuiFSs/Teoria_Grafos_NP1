@@ -219,7 +219,7 @@ export default class Home extends Component {
     });
   };
 
-  gerarGrafo(changedLetter, changedIndexL, type = null) {
+  gerarGrafo(changedLetter, changedIndexL, changedValue, type = null) {
     let select = document.getElementById('select').value;
     let input = document.getElementsByClassName('input');
     let array = {
@@ -248,20 +248,17 @@ export default class Home extends Component {
 
     const objList = {};
     let letterIndex = 0; // index of l in array below
-    console.log(array);
-    console.log('l:', changedLetter, 'index:', changedIndexL);
 
     for (const l in array) {
       if (array[l].length !== 0) {
         if (!this.state.direcionado) {
           for (let i = 0; i < array[l].length; i++) {
             if (array[l][i]) {
+              const arrLetter = String.fromCharCode(65 + i);
               if (!this.state.valorado) {
-                array[String.fromCharCode(65 + i)][letterIndex] = true;
+                array[arrLetter][letterIndex] = true;
               } else {
-                // TODO: PEGAR O changedLetter ver se o q mudou é menor e entao fazer com q o maior fique com o msmo valor
-                // se o q mudou é menor q o atual array[l][i], entao array[l][i] = o q mudou
-                array[String.fromCharCode(65 + i)][letterIndex] = array[l][i];
+                array[arrLetter][letterIndex] = array[l][i];
               }
             }
           }
@@ -276,18 +273,24 @@ export default class Home extends Component {
       if (changedLetter && !isNaN(changedIndexL)) {
         if (objList[changedLetter][changedIndexL]) {
           objList[changedLetter][changedIndexL] = false;
-
           // pega a letra do index d indexL (o q foi clicado) e dpois pega a letra da row e transforma em numero
           objList[String.fromCharCode(65 + changedIndexL)][
             changedLetter.charCodeAt(0) - 65
           ] = false;
         }
       }
-    }
-
-    for (const l in array) {
-      if (array[l].length !== 0) {
-        objList[l] = array[l];
+    } else {
+      // pega o index da letra que mudou
+      const changedLetterToIndex = changedLetter.charCodeAt(0) - 65;
+      // verifica se o index da letra que mudou é maior do que o qual está sendo mudado
+      if (changedLetterToIndex > changedIndexL) {
+        // se for, entao pega a letra do que está sendo mudado
+        const changedIndexLToLetter = String.fromCharCode(65 + changedIndexL);
+        // e entao com a letra do que está sendo mudado, coloco o valor dela o mesmo do qual mudou
+        // ex: mudei a linha da letra C e a coluna B, entao pega o index do C, ve se é maior q o B, se for, entao pega o a letra do B (porque o B aqui vem como index, e nao letra), e coloca o valor C na linha do B o mesmo valor que a linha C alterou
+        objList[changedIndexLToLetter][changedLetterToIndex] = changedValue;
+        // aqui faz com que o input da propria linha e coluna que mudou receba o valor, porque sem isso ele fica com o valor atrasado, ex: input na linha C, coluna B = 23, a linha B coluna C fica com o valor 23 mas o propio input da linha C, coluna B fica como 2 só, pq ta "atrasado" o valor
+        objList[changedLetter][changedIndexL] = changedValue;
       }
     }
 

@@ -28,7 +28,7 @@ export default class table extends Component {
         this.props.gerarGrafo(letter, i);
       } else {
         // this.props.gerarGrafo(null, null);
-        this.props.gerarGrafo(letter, i, type);
+        this.props.gerarGrafo(letter, i, e.target.value, type);
       }
     }
   };
