@@ -16,7 +16,7 @@ export default class table extends Component {
     return tr.map(test => test);
   }
 
-  handleChangeCheckbox = (letter, i, e, type) => {
+  handleChangeInput = (letter, i, e, type) => {
     if (type === 'checkbox') {
       if (!e.target.checked) {
         this.props.gerarGrafo(letter, i);
@@ -27,7 +27,8 @@ export default class table extends Component {
       if (e.target.value === '') {
         this.props.gerarGrafo(letter, i);
       } else {
-        this.props.gerarGrafo(null, null);
+        // this.props.gerarGrafo(null, null);
+        this.props.gerarGrafo(letter, i, e.target.value, type);
       }
     }
   };
@@ -46,17 +47,15 @@ export default class table extends Component {
         <td key={alf[i]} align='center'>
           <Label>
             <Input
-              onChange={() => this.props.gerarGrafo(null, null)}
+              onChange={e => this.handleChangeInput(alf[i], i, e, type)}
               className='input'
               type={type}
             />
-            {/* {!this.props.valorado && 'conectado'} */}
           </Label>
         </td>
       );
     }
 
-    // TALVEZ DPOIS :)
     const { grafoGerado, direcionado } = this.props;
     let temGrafo = !direcionado && Object.keys(grafoGerado).length !== 0;
 
@@ -69,7 +68,7 @@ export default class table extends Component {
             </th>
             {temGrafo
               ? aux.map((_, i) => (
-                  <td align='center'>
+                  <td key={_ + i} align='center'>
                     <Label>{this.makeInput(type, letter, i)}</Label>
                   </td>
                 ))
@@ -77,6 +76,7 @@ export default class table extends Component {
           </tr>
         );
       }
+      return null;
     });
   }
 
@@ -85,7 +85,7 @@ export default class table extends Component {
     if (type === 'checkbox') {
       return (
         <Input
-          onChange={e => this.handleChangeCheckbox(letter, i, e, type)}
+          onChange={e => this.handleChangeInput(letter, i, e, type)}
           className='input'
           type={type}
           checked={grafoGerado[letter] ? grafoGerado[letter][i] : false}
@@ -104,7 +104,7 @@ export default class table extends Component {
 
       return (
         <Input
-          onChange={e => this.handleChangeCheckbox(letter, i, e, type)}
+          onChange={e => this.handleChangeInput(letter, i, e, type)}
           className='input'
           type={type}
           value={value}
