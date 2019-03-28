@@ -46,6 +46,7 @@ export default class Example extends React.Component {
           <th scope='row'>{res}</th>
           <td>
             <Input
+              placeholder={this.props.valorado ? 'Ex: 2 B; 3 C' : 'Ex: A; B; C'}
               onChange={e => this.handleInputChange(res, e.target.value)}
               value={this.state.rawInputs[res]}
               className='inputAdj'

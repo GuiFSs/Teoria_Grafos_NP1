@@ -47,6 +47,7 @@ export default class table extends Component {
         <td key={alf[i]} align='center'>
           <Label>
             <Input
+              placeholder={type === 'input' ? 'Ex: 17' : ''}
               onChange={e => this.handleChangeInput(alf[i], i, e, type)}
               className='input'
               type={type}
@@ -104,6 +105,7 @@ export default class table extends Component {
 
       return (
         <Input
+          placeholder='Ex: 17'
           onChange={e => this.handleChangeInput(letter, i, e, type)}
           className='input'
           type={type}

@@ -5,16 +5,16 @@ import imagem from '../../img/logoGrafo.png';
 export default class Logo extends React.Component {
   render() {
     return (
-      <Navbar color="dark" className="navbar-dark">
-        <NavbarBrand href="#home" color="light">
+      <Navbar color='dark' className='navbar-dark'>
+        <NavbarBrand href='#home' color='light'>
           <img
-            alt=""
+            alt=''
             src={imagem}
-            width="60"
-            height="60"
-            className="d-inline-block align-top"
+            width='50'
+            height='50'
+            className='d-inline-block align-top'
           />
-          <span id="text">Grafos: Matriz e Lista Adjacentes</span>
+          <span id='text'>Grafos: Matriz e Lista Adjacentes</span>
         </NavbarBrand>
       </Navbar>
     );
