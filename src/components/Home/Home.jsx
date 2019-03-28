@@ -35,13 +35,13 @@ export default class Home extends Component {
     document.getElementById('select').value !== '...' &&
     document.getElementById('radio').checked !== false
       ? this.setState({ table: true, list: false })
-      : this.setState({ table: false });
+      : this.setState({ table: false, list: true });
   };
   async setList() {
     document.getElementById('select').value !== '...' &&
     document.getElementById('radio2').checked !== false
       ? this.setState({ list: true, table: false })
-      : this.setState({ list: false });
+      : this.setState({ list: false, table: true });
   }
 
   sortKeys = obj => {
@@ -332,6 +332,7 @@ export default class Home extends Component {
           <FormGroup check>
             <Label check>
               <Input
+                defaultChecked
                 type='radio'
                 id='radio'
                 onChange={this.setTable}
@@ -400,21 +401,17 @@ export default class Home extends Component {
           ''
         )}
 
-        {this.state.listState.showCList && (
+        {this.state.listState.showCList && this.state.list && (
           <CList
             type={this.state.valorado ? 'text' : 'checkbox'}
             nVertices={this.state.nVertices}
             values={this.state.listState.values}
           />
         )}
-        {/* {this.state.list && (
-          <Button onClick={this.convertToMatrix}>Gerar Grafo</Button>
-        )} */}
 
-        {showConvertedTable && (
+        {showConvertedTable && this.state.table && (
           <CTable nVertices={this.state.nVertices} inputs={input} />
         )}
-        {/* {this.state.show ? <Wrapper inputs={this.state.input} /> : ''} */}
       </Container>
     );
   }
